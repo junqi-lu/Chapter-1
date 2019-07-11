@@ -1,13 +1,10 @@
 package com.example.geoquiz;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
-import android.nfc.Tag;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -117,6 +114,7 @@ public class MainActivity extends AppCompatActivity {
                 Intent i = new Intent(MainActivity.this, CheatActivity.class);
                 boolean answerIsTrue = mQuestionBank[mCurrentIndex].isTureQuestion();
                 i.putExtra(CheatActivity.EXTRA_ANSWER_IS_TRUE, answerIsTrue);
+                i.putExtra(CheatActivity.EXTRA_ANSWER_IS_SHOWN, mIsCheater);
                 startActivityForResult(i, 0);
             }
         });
@@ -135,7 +133,8 @@ public class MainActivity extends AppCompatActivity {
         if (data == null) {
             return;
         }
-        mIsCheater = data.getBooleanExtra(CheatActivity.EXTRA_ANSWER_SHOWN, false);
+        mIsCheater = data.getBooleanExtra(CheatActivity.EXTRA_ANSWER_IS_SHOWN, false);
+        Log.d(TAG, "onActivityResult mIsCheater: " + mIsCheater);
     }
 
     @Override
