@@ -1,8 +1,10 @@
 package com.example.geoquiz;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.PersistableBundle;
@@ -22,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageButton mPrevButton;
     private TextView mQuestionTextView;
     private ProgressBar mProgressBar;
+    private Button mCheatButton;
 
     private TrueFalse[] mQuestionBank = new TrueFalse[] {
             new TrueFalse(R.string.question_oceans, true),
@@ -32,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
 
     private int mCurrentIndex = 0;
     private int mCurrentProgress = mCurrentIndex + 1;
+
+    private boolean mIsCheater;
 
     private static final String TAG = "MainActivity";
     private static final String KEY_INDEX = "index";
@@ -67,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
                 mCurrentProgress = mCurrentIndex + 1;
+                mIsCheater = false;
                 updateQuestion();
                 Log.d(TAG, "mNextButton onClick() called.");
             }
@@ -78,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 mCurrentIndex = mCurrentIndex == 0 ? mQuestionBank.length - 1 : mCurrentIndex - 1;
                 mCurrentProgress = mCurrentIndex + 1;
+                mIsCheater = false;
                 updateQuestion();
                 Log.d(TAG, "mPrevButton onClick() called.");
             }
@@ -100,6 +107,17 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "mFalseButton onClick() called.");
             }
         });
+
+        mCheatButton = findViewById(R.id.cheat_button);
+        mCheatButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(MainActivity.this, CheatActivity.class);
+                boolean answerIsTrue = mQuestionBank[mCurrentIndex].isTureQuestion();
+                i.putExtra(CheatActivity.EXTRA_ANSWER_IS_TRUE, answerIsTrue);
+                startActivityForResult(i, 0);
+            }
+        });
     }
 
     @Override
@@ -107,6 +125,14 @@ public class MainActivity extends AppCompatActivity {
         super.onSaveInstanceState(savedInstanceState);
         Log.i(TAG, "onSaveInstanceState");
         savedInstanceState.putInt(KEY_INDEX, mCurrentIndex);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (data == null) {
+            return;
+        }
+        mIsCheater = data.getBooleanExtra(CheatActivity.EXTRA_ANSWER_SHOWN, false);
     }
 
     @Override
@@ -150,10 +176,14 @@ public class MainActivity extends AppCompatActivity {
 
         int messageResId;
 
-        if (userPressedTrue == answerIsTrue) {
-            messageResId = R.string.correct_toast;
+        if (mIsCheater) {
+            messageResId = R.string.judgement_toast;
         } else {
-            messageResId = R.string.incorrect_toast;
+            if (userPressedTrue == answerIsTrue) {
+                messageResId = R.string.correct_toast;
+            } else {
+                messageResId = R.string.incorrect_toast;
+            }
         }
 
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show();
