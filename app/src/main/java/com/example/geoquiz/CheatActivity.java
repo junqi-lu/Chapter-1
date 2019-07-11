@@ -31,7 +31,7 @@ public class CheatActivity extends Activity {
         mAnswerIsShown = false;
 
         if (savedInstanceState != null) {
-            mAnswerIsShown = savedInstanceState.getBoolean(ANSWER_SHOWN);
+            mAnswerIsShown = savedInstanceState.getBoolean(ANSWER_SHOWN, false);
         }
 
         super.onCreate(savedInstanceState);
